@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stddef.h>
+
 // From verify.h
 #define SIGNATURE_PATH "/challenge/.signature"
 #define MAX_PATH_LENGTH 256
@@ -27,5 +29,13 @@
 #define BASH_PATH "/bin/bash"
 #define BASH_UID 0
 #define BASH_GID 0
+
+static const char *safe_env_strings[] = {
+    "PATH=" DEFAULT_PATH,
+    "IFS= \t\n",
+    "LANG=C",
+    "LC_ALL=C",
+    NULL
+};
 
 #endif // CONFIG_H

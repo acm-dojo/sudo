@@ -131,13 +131,6 @@ static inline void close_excess_fds(void) {
 static inline void setup_secure_environment(void) {
     // Clear all environment variables and set minimal safe environment
     extern char **environ;
-    static const char *safe_env_strings[] = {
-        "PATH=" DEFAULT_PATH,
-        "IFS= \t\n",
-        "LANG=C",
-        "LC_ALL=C",
-        NULL
-    };
     static char *safe_env[5];
     for (int i = 0; safe_env_strings[i]; i++) {
         safe_env[i] = (char *)safe_env_strings[i];
