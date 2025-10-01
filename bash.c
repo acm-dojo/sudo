@@ -1,4 +1,5 @@
 #include "verify.h"
+#include "config.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -12,13 +13,13 @@ int main(int argc, char *argv[]) {
     }
     
     char *newargv[argc + 1];
-    newargv[0] = "bash";
+    newargv[0] = BASH_CMD;
     for (int i = 1; i < argc; i++) {
         newargv[i] = argv[i];
     }
     newargv[argc] = NULL;
     
-    int result = secure_exec_wrapper("/bin/bash", newargv, 0, 0);
+    int result = secure_exec_wrapper(BASH_PATH, newargv, BASH_UID, BASH_GID);
     secure_cleanup();
     return result;
 }

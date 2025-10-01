@@ -13,14 +13,7 @@
 #include <grp.h>
 #include <fcntl.h>
 #include <dirent.h>
-
-// Constants
-#define SIGNATURE_PATH "/challenge/.signature"
-#define MAX_PATH_LENGTH 256
-#define MAX_SIGNATURE_LINES 32
-#define MAX_LINE_LENGTH 512
-#define ERROR_CODE 1
-#define SUCCESS_CODE 0
+#include "config.h"
 
 // Security macros
 #define SECURE_ZERO(ptr, size) do { \
@@ -139,7 +132,7 @@ static inline void setup_secure_environment(void) {
     // Clear all environment variables and set minimal safe environment
     extern char **environ;
     static const char *safe_env_strings[] = {
-        "PATH=/run/challenge/bin:/run/dojo/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games",
+        "PATH=" DEFAULT_PATH,
         "IFS= \t\n",
         "LANG=C",
         "LC_ALL=C",
@@ -158,18 +151,18 @@ static inline void set_secure_limits(void) {
     struct rlimit limit;
     
     // Limit core dumps
-    limit.rlim_cur = 0;
-    limit.rlim_max = 0;
+    limit.rlim_cur = R_LIMIT_CORE_CUR;
+    limit.rlim_max = R_LIMIT_CORE_MAX;
     setrlimit(RLIMIT_CORE, &limit);
     
     // Limit file size (prevent large file attacks)
-    limit.rlim_cur = 100 * 1024 * 1024; // 100MB
-    limit.rlim_max = 100 * 1024 * 1024;
+    limit.rlim_cur = R_LIMIT_FSIZE_CUR;
+    limit.rlim_max = R_LIMIT_FSIZE_MAX;
     setrlimit(RLIMIT_FSIZE, &limit);
     
     // Limit number of processes
-    limit.rlim_cur = 32;
-    limit.rlim_max = 32;
+    limit.rlim_cur = R_LIMIT_NPROC_CUR;
+    limit.rlim_max = R_LIMIT_NPROC_MAX;
     setrlimit(RLIMIT_NPROC, &limit);
 }
 
