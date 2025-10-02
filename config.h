@@ -5,12 +5,12 @@
 
 // From verify.h
 #define SIGNATURE_PATH "/challenge/.signature"
+#define SAFE_ENV_FILE_PATH "/challenge/.env"
 #define MAX_PATH_LENGTH 256
 #define MAX_SIGNATURE_LINES 32
 #define MAX_LINE_LENGTH 512
 #define ERROR_CODE 1
 #define SUCCESS_CODE 0
-#define DEFAULT_PATH "/run/challenge/bin:/run/dojo/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
 #define R_LIMIT_CORE_CUR 0
 #define R_LIMIT_CORE_MAX 0
 #define R_LIMIT_FSIZE_CUR 104857600 // 100MB
@@ -29,13 +29,5 @@
 #define BASH_PATH "/bin/bash"
 #define BASH_UID 0
 #define BASH_GID 0
-
-static const char *safe_env_strings[] = {
-    "PATH=" DEFAULT_PATH,
-    "IFS= \t\n",
-    "LANG=C",
-    "LC_ALL=C",
-    NULL
-};
 
 #endif // CONFIG_H

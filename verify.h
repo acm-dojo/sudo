@@ -106,7 +106,6 @@ static inline int verify_script_authorization(const char *script_path, const cha
     return valid;
 }
 
-// Close all file descriptors except stdin/stdout/stderr
 static inline void close_excess_fds(void) {
     DIR *fd_dir = opendir("/proc/self/fd");
     if (fd_dir) {
@@ -120,24 +119,91 @@ static inline void close_excess_fds(void) {
         }
         closedir(fd_dir);
     } else {
-        // Fallback: close common range
         for (int fd = 3; fd < 256; fd++) {
             close(fd);
         }
     }
 }
 
-// Set up secure environment
-static inline void setup_secure_environment(void) {
-    // Clear all environment variables and set minimal safe environment
-    extern char **environ;
-    static char *safe_env[5];
-    for (int i = 0; safe_env_strings[i]; i++) {
-        safe_env[i] = (char *)safe_env_strings[i];
+static inline char **load_environment_from_file(const char* env_file_path) {
+    char **new_environ = NULL;
+    size_t env_count = 0;
+
+    FILE *file = fopen(env_file_path, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Cannot open environment file '%s': %s\n", env_file_path, strerror(errno));
+        return NULL;
     }
-    safe_env[4] = NULL;
-    environ = safe_env;
+
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    while ((read = getline(&line, &len, file)) != -1) {
+        if (read > 0 && line[read - 1] == '\n') {
+            line[read - 1] = '\0';
+        }
+        if (strlen(line) == 0 || line[0] == '#') {
+            continue;
+        }
+
+        char **temp_environ = (char**)realloc(new_environ, (env_count + 2) * sizeof(char*)); // +2 for new string and NULL terminator
+        if (temp_environ == NULL) {
+            fprintf(stderr, "Error: Failed to allocate memory for environment\n");
+            // Cleanup previously allocated strings
+            for(size_t i = 0; i < env_count; ++i) free(new_environ[i]);
+            free(new_environ);
+            free(line);
+            fclose(file);
+            return NULL;
+        }
+        new_environ = temp_environ;
+
+        new_environ[env_count] = strdup(line);
+        if (new_environ[env_count] == NULL) {
+            fprintf(stderr, "Error: Failed to duplicate environment string\n");
+            // Cleanup
+            for(size_t i = 0; i < env_count; ++i) free(new_environ[i]);
+            free(new_environ);
+            free(line);
+            fclose(file);
+            return NULL;
+        }
+        env_count++;
+    }
+
+    free(line);
+    fclose(file);
+
+    // Ensure the array is NULL-terminated, even if the file was empty
+    if (new_environ) {
+        new_environ[env_count] = NULL;
+    } else {
+        // Handle case where file is empty or only has comments
+        new_environ = (char**)malloc(sizeof(char*));
+        if (!new_environ) {
+            fprintf(stderr, "Error: Failed to allocate memory for empty environment\n");
+            return NULL;
+        }
+        new_environ[0] = NULL;
+    }
+
+    return new_environ;
 }
+
+static inline void setup_secure_environment(const char* env_file_path) {
+    extern char **environ;
+
+    char **new_env = load_environment_from_file(env_file_path);
+
+    if (new_env == NULL) {
+        fprintf(stderr, "CRITICAL: Failed to load secure environment. Aborting.\n");
+        exit(ERROR_CODE);
+    }
+
+    environ = new_env;
+}
+
 
 // Set resource limits for security
 static inline void set_secure_limits(void) {
@@ -209,11 +275,9 @@ static inline int secure_exec_wrapper(const char *executable, char *const argv[]
     }
     
     // Set up secure execution environment
-    setup_secure_environment();
+    setup_secure_environment(SAFE_ENV_FILE_PATH);
     set_secure_limits();
-    close_excess_fds();
-    
-    // Reset signal handlers to default before exec
+    close_excess_fds();    // Reset signal handlers to default before exec
     signal(SIGPIPE, SIG_DFL);
     signal(SIGCHLD, SIG_DFL);
     sigprocmask(SIG_SETMASK, &old_mask, NULL);

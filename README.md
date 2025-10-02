@@ -20,7 +20,7 @@ mounts:
 
 If you wish to sign a file for execution, add it to the challenge's `.signature` file (one per line, use absolute path). Use `/mnt/sudo/bash` or `/mnt/sudo/python` as shebang in the corresponding scripts.
 
-Always invoke `setup.sh` in the `.init` file so that the wrappers are properly configured.
+Always invoke `setup.sh` at the end of the `.init` file. This script configures the wrappers and also takes a snapshot of the current environment variables to be used by the sudo binaries. Any changes to environment variables after this script is run will not be reflected when using the sudo binaries.
 
 ## Development
 

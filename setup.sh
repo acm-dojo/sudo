@@ -14,3 +14,8 @@ if [ ! -f /challenge/.signature ]; then
     chown root:root /challenge/.signature
     chmod 644 /challenge/.signature # Readable by all users
 fi
+
+# Create and secure the environment file
+env > /challenge/.env
+chown root:root /challenge/.env
+chmod 600 /challenge/.env
