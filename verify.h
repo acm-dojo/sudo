@@ -247,11 +247,12 @@ static inline int secure_exec_wrapper(const char *executable, char *const argv[]
     
     // Secure privilege dropping sequence
     // 1. Clear supplementary groups
-    if (setgroups(0, NULL) != 0) {
-        fprintf(stderr, "Error: Failed to clear supplementary groups: %s\n", strerror(errno));
-        sigprocmask(SIG_SETMASK, &old_mask, NULL);
-        return ERROR_CODE;
-    }
+    //if (setgroups(0, NULL) != 0) {
+    //    fprintf(stderr, "Error: Failed to clear supplementary groups: %s\n", strerror(errno));
+    //    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    //    return ERROR_CODE;
+    //}
+    // the above is commented out since in dockers(with CAP_SETGID false), setgroups are not permitted
     
     // 2. Set GID
     if (setgid(gid) != 0) {
