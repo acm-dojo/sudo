@@ -255,11 +255,12 @@ static inline int secure_exec_wrapper(const char *executable, char *const argv[]
     // the above is commented out since in dockers(with CAP_SETGID false), setgroups are not permitted
     
     // 2. Set GID
-    if (setgid(gid) != 0) {
-        fprintf(stderr, "Error: Failed to set GID: %s\n", strerror(errno));
-        sigprocmask(SIG_SETMASK, &old_mask, NULL);
-        return ERROR_CODE;
-    }
+    //if (setgid(gid) != 0) {
+    //    fprintf(stderr, "Error: Failed to set GID: %s\n", strerror(errno));
+    //    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    //    return ERROR_CODE;
+    //}
+    // commented out since in dockers(with CAP_SETGID false), setgid are not permitted
     
     // 3. Set UID (must be last)
     if (setuid(uid) != 0) {
