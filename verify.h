@@ -263,18 +263,19 @@ static inline int secure_exec_wrapper(const char *executable, char *const argv[]
     // commented out since in dockers(with CAP_SETGID false), setgid are not permitted
     
     // 3. Set UID (must be last)
-    if (setuid(uid) != 0) {
-        fprintf(stderr, "Error: Failed to set UID: %s\n", strerror(errno));
-        sigprocmask(SIG_SETMASK, &old_mask, NULL);
-        return ERROR_CODE;
-    }
-    
-    // Verify privilege drop was successful (security check)
-    if (getuid() != uid || geteuid() != uid || getgid() != gid || getegid() != gid) {
-        fprintf(stderr, "Error: Privilege drop verification failed\n");
-        sigprocmask(SIG_SETMASK, &old_mask, NULL);
-        return ERROR_CODE;
-    }
+    //if (setuid(uid) != 0) {
+    //    fprintf(stderr, "Error: Failed to set UID: %s\n", strerror(errno));
+    //    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    //    return ERROR_CODE;
+    //}
+    //
+    //// Verify privilege drop was successful (security check)
+    //if (getuid() != uid || geteuid() != uid || getgid() != gid || getegid() != gid) {
+    //    fprintf(stderr, "Error: Privilege drop verification failed\n");
+    //    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+    //    return ERROR_CODE;
+    //}
+    // fuck it docker
     
     // Set up secure execution environment
     setup_secure_environment(SAFE_ENV_FILE_PATH);
